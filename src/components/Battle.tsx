@@ -1,0 +1,464 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../store';
+import { updatePlayer } from '../store';
+import styles from './Battle.module.css';
+
+type Fighter = {
+  id: string;
+  name: string;
+  health: number;
+  maxHealth: number;
+  isBlocking: boolean;
+  isStunned: boolean;
+};
+
+const Battle: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { player, characters } = useSelector((state: RootState) => state.game);
+  
+  // States for character selection
+  const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
+  const [aiCharacters, setAiCharacters] = useState<string[]>([]);
+  const [battleStarted, setBattleStarted] = useState(false);
+  const [currentFighterIndex, setCurrentFighterIndex] = useState(0);
+  const [currentAiFighterIndex, setCurrentAiFighterIndex] = useState(0);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(true); // Track whose turn it is
+
+  // Get available characters (unlocked for player, non-paid for AI)
+  const availableCharacters = characters.filter(c => player.characters.includes(c.id));
+  const aiAvailableCharacters = characters.filter(c => !c.isPaid);
+
+  // Battle states
+  const [playerFighter, setPlayerFighter] = useState<Fighter | null>(null);
+  const [opponentFighter, setOpponentFighter] = useState<Fighter | null>(null);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState<string | null>(null);
+  const [battleLog, setBattleLog] = useState<string[]>([]);
+
+  // Select AI characters randomly
+  useEffect(() => {
+    if (selectedCharacters.length === 3 && aiCharacters.length === 0) {
+      const shuffled = [...aiAvailableCharacters]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map(char => char.id);
+      setAiCharacters(shuffled);
+    }
+  }, [selectedCharacters, aiAvailableCharacters]);
+
+  // Start battle with current fighters
+  useEffect(() => {
+    if (battleStarted && selectedCharacters.length > 0 && aiCharacters.length > 0) {
+      const playerChar = characters.find(c => c.id === selectedCharacters[currentFighterIndex]);
+      const aiChar = characters.find(c => c.id === aiCharacters[currentAiFighterIndex]);
+
+      if (playerChar && aiChar) {
+        setPlayerFighter({
+          id: playerChar.id,
+          name: playerChar.name,
+          health: playerChar.health,
+          maxHealth: playerChar.maxHealth,
+          isBlocking: false,
+          isStunned: false
+        });
+
+        setOpponentFighter({
+          id: aiChar.id,
+          name: aiChar.name,
+          health: aiChar.health,
+          maxHealth: aiChar.maxHealth,
+          isBlocking: false,
+          isStunned: false
+        });
+      }
+    }
+  }, [battleStarted, currentFighterIndex, currentAiFighterIndex, selectedCharacters, aiCharacters, characters]);
+
+  const handleCharacterSelect = (characterId: string) => {
+    if (selectedCharacters.includes(characterId)) {
+      setSelectedCharacters(prev => prev.filter(id => id !== characterId));
+    } else if (selectedCharacters.length < 3) {
+      setSelectedCharacters(prev => [...prev, characterId]);
+    }
+  };
+
+  const startBattle = () => {
+    if (selectedCharacters.length === 3) {
+      setBattleStarted(true);
+      setIsPlayerTurn(true); // Player starts first
+      addToBattleLog("Battle starts! It's your turn!");
+    }
+  };
+
+  const addToBattleLog = (message: string) => {
+    setBattleLog(prev => [...prev, message].slice(-5));
+  };
+
+  const performAttack = (damage: number, isPlayer: boolean) => {
+    if (!playerFighter || !opponentFighter) return;
+
+    if (isPlayer && !opponentFighter.isBlocking) {
+      const newHealth = Math.max(0, opponentFighter.health - damage);
+      setOpponentFighter(prev => prev ? { ...prev, health: newHealth } : null);
+      addToBattleLog(`${playerFighter.name} deals ${damage} damage!`);
+      
+      if (newHealth === 0) {
+        if (currentAiFighterIndex < 2) {
+          // Next AI fighter
+          setCurrentAiFighterIndex(prev => prev + 1);
+        } else {
+          // Player wins
+          setGameOver(true);
+          setWinner('player');
+          dispatch(updatePlayer({ experience: player.experience + 10 }));
+        }
+      } else {
+        // Switch turns after player's attack
+        setIsPlayerTurn(false);
+        addToBattleLog("Opponent's turn!");
+      }
+    } else if (!isPlayer && !playerFighter.isBlocking) {
+      const newHealth = Math.max(0, playerFighter.health - damage);
+      setPlayerFighter(prev => prev ? { ...prev, health: newHealth } : null);
+      addToBattleLog(`${opponentFighter.name} deals ${damage} damage!`);
+      
+      if (newHealth === 0) {
+        if (currentFighterIndex < 2) {
+          // Next player fighter
+          setCurrentFighterIndex(prev => prev + 1);
+        } else {
+          // AI wins
+          setGameOver(true);
+          setWinner('opponent');
+        }
+      } else {
+        // Switch turns after AI's attack
+        setIsPlayerTurn(true);
+        addToBattleLog("Your turn!");
+      }
+    }
+  };
+
+  // AI opponent logic
+  useEffect(() => {
+    if (battleStarted && !gameOver && opponentFighter && !isPlayerTurn) {
+      // Add a delay before AI acts to make it more natural
+      const aiActionTimeout = setTimeout(() => {
+        const actions = ['attack', 'block', 'special'];
+        const randomAction = actions[Math.floor(Math.random() * actions.length)];
+        
+        switch (randomAction) {
+          case 'attack':
+            performAttack(50, false);
+            break;
+          case 'block':
+            setOpponentFighter(prev => prev ? { ...prev, isBlocking: true } : null);
+            addToBattleLog(`${opponentFighter.name} is blocking!`);
+            setTimeout(() => {
+              if (!gameOver) {
+                setOpponentFighter(prev => prev ? { ...prev, isBlocking: false } : null);
+                setIsPlayerTurn(true);
+                addToBattleLog("Your turn!");
+              }
+            }, 2000);
+            break;
+          case 'special':
+            performAttack(100, false);
+            break;
+        }
+      }, 1500); // 1.5 second delay before AI acts
+
+      return () => clearTimeout(aiActionTimeout);
+    }
+  }, [battleStarted, gameOver, opponentFighter, isPlayerTurn]);
+
+  if (!battleStarted) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-4 md:p-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center">Select Your Team (3 Characters)</h1>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
+          {availableCharacters.map((character) => (
+            <div
+              key={character.id}
+              onClick={() => handleCharacterSelect(character.id)}
+              className={`
+                relative cursor-pointer rounded-lg overflow-hidden
+                ${selectedCharacters.includes(character.id) ? 'ring-2 ring-yellow-500' : ''}
+                transition-all duration-200 transform hover:scale-105
+              `}
+            >
+              <div className="bg-gray-800 aspect-square flex items-center justify-center">
+                <span className="material-icons text-4xl md:text-6xl">person</span>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black p-2">
+                <p className="text-xs md:text-sm font-bold truncate">{character.name}</p>
+                <p className="text-xs text-gray-300">Lv.{character.level}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Selected Team Preview */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 bg-opacity-95 p-4 md:p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col items-center space-y-4">
+              {/* Team Status */}
+              <div className="text-center mb-2">
+                <p className="text-sm font-bold">
+                  {selectedCharacters.length === 3 
+                    ? "Team Complete! Click start to begin!" 
+                    : `Select ${3 - selectedCharacters.length} more character${3 - selectedCharacters.length === 1 ? '' : 's'}`
+                  }
+                </p>
+              </div>
+              {/* Selected Characters */}
+              <div className="flex flex-wrap justify-center gap-3">
+                {selectedCharacters.map((id) => {
+                  const char = characters.find(c => c.id === id);
+                  return (
+                    <div 
+                      key={id} 
+                      className="bg-gray-700 px-3 py-2 rounded-lg flex items-center space-x-2"
+                      onClick={() => handleCharacterSelect(id)}
+                    >
+                      <span className="material-icons text-xl">person</span>
+                      <span className="font-bold text-sm md:text-base">{char?.name}</span>
+                    </div>
+                  );
+                })}
+                {Array.from({ length: 3 - selectedCharacters.length }).map((_, i) => (
+                  <div 
+                    key={`empty-${i}`} 
+                    className="bg-gray-700 bg-opacity-50 px-3 py-2 rounded-lg flex items-center space-x-2"
+                  >
+                    <span className="material-icons text-xl text-gray-500">add</span>
+                    <span className="font-bold text-sm md:text-base text-gray-500">Select Hero</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Start Button - Fixed position */}
+        {selectedCharacters.length === 3 && (
+          <div className="fixed left-4 bottom-32 z-50">
+            <button
+              onClick={startBattle}
+              className="w-24 h-24 bg-yellow-500 text-black rounded-lg flex flex-col items-center justify-center hover:bg-yellow-400 transition-all duration-200 transform hover:scale-105 font-bold shadow-lg"
+            >
+              <span className="material-icons text-3xl">play_arrow</span>
+              <span className="text-sm mt-1">Start</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white relative">
+      {/* Health Bars and Battle Status - Fixed at top */}
+      <div className="fixed top-0 left-0 right-0 bg-gray-800 bg-opacity-95 z-20">
+        {playerFighter && opponentFighter && (
+          <div className="p-2">
+            {/* Player Health */}
+            <div className="mb-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-bold text-sm">{playerFighter.name}</span>
+                <span className="text-sm">{playerFighter.health}/{playerFighter.maxHealth}</span>
+              </div>
+              <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-green-600 transition-all duration-300"
+                  style={{ width: `${(playerFighter.health / playerFighter.maxHealth) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Opponent Health */}
+            <div className="mb-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-bold text-sm">{opponentFighter.name}</span>
+                <span className="text-sm">{opponentFighter.health}/{opponentFighter.maxHealth}</span>
+              </div>
+              <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-red-600 transition-all duration-300"
+                  style={{ width: `${(opponentFighter.health / opponentFighter.maxHealth) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Turn Indicator and Teams */}
+            <div className="flex justify-between items-center mt-2">
+              {/* Player Team */}
+              <div className="flex items-center gap-1">
+                {selectedCharacters.map((id, index) => (
+                  <div 
+                    key={id}
+                    className={`w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center
+                      ${index === currentFighterIndex ? 'ring-2 ring-yellow-500' : 'opacity-50'}
+                    `}
+                  >
+                    <span className="material-icons text-sm">person</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Turn Indicator */}
+              <div className="text-sm font-bold px-2">
+                {isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
+              </div>
+
+              {/* AI Team */}
+              <div className="flex items-center gap-1">
+                {aiCharacters.map((id, index) => (
+                  <div 
+                    key={id}
+                    className={`w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center
+                      ${index === currentAiFighterIndex ? 'ring-2 ring-red-500' : 'opacity-50'}
+                    `}
+                  >
+                    <span className="material-icons text-sm">person</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Battle Arena - Adjusted top padding to account for fixed header */}
+      <div className={`${styles.arena} pt-28`}>
+        <div className={styles.arenaFloor} />
+
+        {/* Player Character */}
+        {playerFighter && (
+          <div className={`${styles.character} ${styles.characterLeft} 
+            ${playerFighter.isBlocking ? styles.blocking : ''}
+            ${playerFighter.isStunned ? styles.stunned : ''}`}
+          >
+            <div className={`${styles.characterModel} ${styles.playerModel}`}>
+              <span className="material-icons text-6xl md:text-8xl">person</span>
+            </div>
+          </div>
+        )}
+
+        {/* Opponent Character */}
+        {opponentFighter && (
+          <div className={`${styles.character} ${styles.characterRight}
+            ${opponentFighter.isBlocking ? styles.blocking : ''}
+            ${opponentFighter.isStunned ? styles.stunned : ''}`}
+          >
+            <div className={`${styles.characterModel} ${styles.opponentModel}`}>
+              <span className="material-icons text-6xl md:text-8xl">person</span>
+            </div>
+          </div>
+        )}
+
+        {/* Arena Lighting */}
+        <div className={styles.arenaLighting} />
+      </div>
+
+      {/* Battle Log - Hidden on mobile */}
+      <div className="fixed left-2 top-32 w-48 md:w-64 bg-gray-800 bg-opacity-90 rounded-lg p-3 md:p-4 hidden md:block">
+        <h3 className="font-bold mb-2 text-sm">Battle Log</h3>
+        <div className="space-y-1">
+          {battleLog.map((log, index) => (
+            <p key={index} className="text-xs text-gray-300">{log}</p>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      {playerFighter && opponentFighter && (
+        <div className="fixed bottom-0 left-0 right-0 p-3 bg-gray-800 bg-opacity-95">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <button
+                onClick={() => performAttack(50, true)}
+                disabled={gameOver || !isPlayerTurn || playerFighter.isStunned}
+                className="w-full bg-blue-600 px-4 py-3 rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50"
+              >
+                Attack
+              </button>
+              <button
+                onClick={() => {
+                  setPlayerFighter(prev => prev ? { ...prev, isBlocking: true } : null);
+                  addToBattleLog(`${playerFighter.name} is blocking!`);
+                  setTimeout(() => {
+                    if (!gameOver) {
+                      setPlayerFighter(prev => prev ? { ...prev, isBlocking: false } : null);
+                      setIsPlayerTurn(false);
+                      addToBattleLog("Opponent's turn!");
+                    }
+                  }, 2000);
+                }}
+                disabled={gameOver || !isPlayerTurn || playerFighter.isStunned}
+                className="w-full bg-green-600 px-4 py-3 rounded-lg text-sm font-bold hover:bg-green-700 disabled:opacity-50"
+              >
+                Block
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {characters.find(c => c.id === selectedCharacters[currentFighterIndex])?.abilities.map((ability) => (
+                <button
+                  key={ability.id}
+                  onClick={() => performAttack(ability.damage, true)}
+                  disabled={gameOver || !isPlayerTurn || playerFighter.isStunned}
+                  className="w-full bg-purple-600 px-4 py-3 rounded-lg text-sm font-bold hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {ability.name}
+                </button>
+              ))}
+              <button
+                onClick={() => navigate('/')}
+                className="w-full bg-red-600 px-4 py-3 rounded-lg text-sm font-bold hover:bg-red-700"
+              >
+                Surrender
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Game Over Overlay */}
+      {gameOver && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-xl p-6 text-center max-w-sm w-full">
+            <h2 className="text-2xl font-bold mb-4">
+              {winner === 'player' ? 'Victory!' : 'Defeat!'}
+            </h2>
+            <p className="mb-6 text-sm">
+              {winner === 'player' 
+                ? 'Congratulations! You won the battle!' 
+                : 'Better luck next time!'}
+            </p>
+            <div className="space-x-4">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-700"
+              >
+                Fight Again
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="bg-gray-600 px-6 py-2 rounded-lg text-sm font-bold hover:bg-gray-700"
+              >
+                Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Battle; 

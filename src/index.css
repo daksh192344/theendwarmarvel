@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 ease-in-out;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white;
+  }
+
+  .card {
+    @apply bg-gray-800 rounded-lg p-4 shadow-lg;
+  }
+}
+
+.landscape-container {
+  @apply w-full h-screen bg-gray-900 overflow-hidden relative;
+}
+
+.character-card {
+  @apply bg-gray-800 rounded-lg p-4 hover:shadow-xl transition-all duration-300;
+}
+
+.ability-button {
+  @apply btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold;
+}
+
+.health-bar {
+  @apply h-4 bg-red-600 rounded-full overflow-hidden;
+}
+
+.cooldown-overlay {
+  @apply absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center;
+} 

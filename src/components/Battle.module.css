@@ -1,0 +1,99 @@
+.arena {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #1a1a1a, #000000);
+  overflow: hidden;
+}
+
+.arena::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.arenaFloor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.5));
+  transform: perspective(1000px) rotateX(60deg);
+}
+
+.character {
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.characterLeft {
+  left: 25%;
+  transform: translateX(-50%);
+}
+
+.characterRight {
+  right: 25%;
+  transform: translateX(50%);
+}
+
+.blocking {
+  opacity: 0.75;
+}
+
+.stunned {
+  opacity: 0.5;
+}
+
+.characterModel {
+  width: 12rem;
+  height: 12rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.playerModel {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+}
+
+.opponentModel {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+}
+
+.arenaLighting {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.arenaLighting::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+}
+
+.arenaLighting::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+} 
