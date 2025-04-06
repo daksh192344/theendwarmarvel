@@ -2,16 +2,13 @@ export type Ability = {
   id: string;
   name: string;
   damage: number;
+  description: string;
   cooldown: number;
   currentCooldown: number;
   isUltimate: boolean;
-  description: string;
+  effect?: string;
   duration?: number;
-  speedMultiplier?: number;
-  strengthMultiplier?: number;
-  effect?: 'stun' | 'steal' | 'speed-boost' | 'strength-boost' | 'freeze' | 'blind' | 'dot' | 'revive' | 'steal-all';
   hits?: number;
-  uses?: number;
   tickDamage?: number;
 };
 
@@ -26,33 +23,52 @@ export type Character = {
   experience: number;
   isPaid: boolean;
   isUnlocked: boolean;
-  requiredLevel?: number;
+  cost: number;
+  unlockCost: number;
+  requiredLevel: number;
   abilities: Ability[];
-  skins: Skin[];
-  currentSkin: Skin;
+  skins: string[];
+  currentSkin: string;
+};
+
+export type Achievement = {
+  id: string;
+  name: string;
+  description: string;
+  completed: boolean;
+  progress?: {
+    current: number;
+    required: number;
+  };
 };
 
 export type Player = {
   id: string;
   name: string;
+  level: number;
+  experience: number;
+  characters: string[];
+  gems: number;
+  gold: number;
+  wins: number;
+  losses: number;
+  achievements: Achievement[];
   coins: number;
   diamonds: number;
   rank: string;
-  experience: number;
-  level: number;
-  characters: string[];
   selectedCharacters: string[];
 };
 
 export type BattleState = {
-  mode: 'ranked' | 'casual' | 'tournament';
-  players: string[];
-  status: 'waiting' | 'in-progress' | 'completed';
-  winner?: string;
+  isActive: boolean;
+  currentCharacterIndex: number;
+  playerCharacters: Character[];
+  aiCharacters: Character[];
+  winner: string | null;
 };
 
 export type GameState = {
   player: Player;
   characters: Character[];
-  battleState: BattleState | null;
+  battle: BattleState;
 }; 

@@ -7,22 +7,65 @@ const initialState: GameState = {
     name: 'Player',
     level: 1,
     experience: 0,
-    characters: ['iron-man', 'thor', 'captain-america', 'hulk', 'black-widow', 'hawkeye'], // Starting characters
-    selectedCharacters: [],
+    characters: ['thor', 'iron-man', 'captain-america'],
+    gems: 1000,
+    gold: 1000,
+    wins: 0,
+    losses: 0,
+    achievements: [],
     coins: 0,
     diamonds: 0,
-    rank: 'Bronze'
+    rank: 'Bronze',
+    selectedCharacters: []
   },
   characters: [
     {
-      id: 'iron-man',
-      name: 'Iron Man',
+      id: 'thor',
+      name: 'Thor',
       health: 1000,
       maxHealth: 1000,
       level: 1,
       experience: 0,
       isPaid: false,
       isUnlocked: true,
+      cost: 0,
+      unlockCost: 0,
+      requiredLevel: 1,
+      abilities: [
+        { 
+          id: 'lightning',
+          name: 'Lightning Strike',
+          damage: 100,
+          cooldown: 4,
+          currentCooldown: 0,
+          isUltimate: false,
+          description: 'Call down lightning from the sky'
+        },
+        {
+          id: 'mjolnir',
+          name: 'Mjolnir Throw',
+          damage: 90,
+          cooldown: 3,
+          currentCooldown: 0,
+          isUltimate: false,
+          description: 'Throw Mjolnir at the enemy'
+        }
+      ],
+      skins: ['default'],
+      currentSkin: 'default'
+    },
+    {
+      id: 'iron-man',
+      name: 'Iron Man',
+      health: 900,
+      maxHealth: 900,
+      level: 1,
+      experience: 0,
+      isPaid: false,
+      isUnlocked: true,
+      cost: 0,
+      unlockCost: 0,
+      requiredLevel: 1,
       abilities: [
         { 
           id: 'repulsor',
@@ -47,46 +90,17 @@ const initialState: GameState = {
       currentSkin: 'default'
     },
     {
-      id: 'thor',
-      name: 'Thor',
+      id: 'captain-america',
+      name: 'Captain America',
       health: 1200,
       maxHealth: 1200,
       level: 1,
       experience: 0,
       isPaid: false,
       isUnlocked: true,
-      abilities: [
-        {
-          id: 'lightning',
-          name: 'Lightning Strike',
-          damage: 100,
-          cooldown: 4,
-          currentCooldown: 0,
-          isUltimate: false,
-          description: 'Call down lightning from the sky'
-        },
-        {
-          id: 'mjolnir',
-          name: 'Mjolnir Throw',
-          damage: 90,
-          cooldown: 3,
-          currentCooldown: 0,
-          isUltimate: false,
-          description: 'Throw Mjolnir at the enemy'
-        }
-      ],
-      skins: ['default'],
-      currentSkin: 'default'
-    },
-    {
-      id: 'captain-america',
-      name: 'Captain America',
-      health: 900,
-      maxHealth: 900,
-      level: 1,
-      experience: 0,
-      isPaid: false,
-      isUnlocked: true,
+      cost: 0,
+      unlockCost: 0,
+      requiredLevel: 1,
       abilities: [
         {
           id: 'shield-throw',
@@ -118,7 +132,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 2,
       abilities: [
         {
           id: 'trap',
@@ -136,6 +153,61 @@ const initialState: GameState = {
       currentSkin: 'default'
     },
     {
+      id: 'dr-strange',
+      name: 'Dr. Strange',
+      health: 800,
+      maxHealth: 800,
+      level: 1,
+      experience: 0,
+      isPaid: false,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 3,
+      abilities: [
+        {
+          id: 'steal',
+          name: 'Ability Theft',
+          damage: 0,
+          cooldown: 10,
+          currentCooldown: 0,
+          isUltimate: true,
+          description: 'Steal enemy ability',
+          effect: 'steal'
+        }
+      ],
+      skins: ['default'],
+      currentSkin: 'default'
+    },
+    {
+      id: 'wong',
+      name: 'Wong',
+      health: 900,
+      maxHealth: 900,
+      level: 1,
+      experience: 0,
+      isPaid: false,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 4,
+      abilities: [
+        {
+          id: 'speed',
+          name: 'Speed Burst',
+          damage: 0,
+          cooldown: 10,
+          currentCooldown: 0,
+          isUltimate: true,
+          description: 'Temporarily increase movement speed',
+          effect: 'speed-boost',
+          duration: 5
+        }
+      ],
+      skins: ['default'],
+      currentSkin: 'default'
+    },
+    {
       id: 'loki',
       name: 'Loki',
       health: 800,
@@ -143,7 +215,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 5,
       abilities: [
         {
           id: 'steal',
@@ -167,7 +242,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 6,
       abilities: [
         {
           id: 'rockets',
@@ -191,7 +269,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 7,
       abilities: [
         {
           id: 'speed-boost',
@@ -216,7 +297,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 8,
       abilities: [
         {
           id: 'double-claw',
@@ -240,7 +324,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 9,
       abilities: [
         {
           id: 'extra-life',
@@ -264,7 +351,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 10,
       abilities: [
         {
           id: 'rage',
@@ -289,7 +379,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 11,
       abilities: [
         {
           id: 'web',
@@ -314,7 +407,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 12,
       abilities: [
         {
           id: 'punch',
@@ -337,7 +433,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 13,
       abilities: [
         {
           id: 'shock',
@@ -363,7 +462,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 14,
       abilities: [
         {
           id: 'combo',
@@ -387,7 +489,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 15,
       abilities: [
         {
           id: 'speed',
@@ -412,7 +517,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 16,
       abilities: [
         {
           id: 'jewel',
@@ -438,7 +546,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 17,
       abilities: [
         {
           id: 'darkness',
@@ -463,17 +574,19 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 18,
       abilities: [
         {
-          id: 'punch',
+          id: 'binary',
           name: 'Binary Punch',
-          damage: 250,
+          damage: 300,
           cooldown: 15,
           currentCooldown: 0,
           isUltimate: true,
-          description: 'Unleash a devastating punch in binary form',
-          uses: 1
+          description: 'Unleash a devastating punch in binary form'
         }
       ],
       skins: ['default'],
@@ -487,7 +600,10 @@ const initialState: GameState = {
       level: 1,
       experience: 0,
       isPaid: false,
-      isUnlocked: true,
+      isUnlocked: false,
+      cost: 0,
+      unlockCost: 500,
+      requiredLevel: 19,
       abilities: [
         {
           id: 'combo',
@@ -512,6 +628,9 @@ const initialState: GameState = {
       experience: 0,
       isPaid: true,
       isUnlocked: false,
+      cost: 2000,
+      unlockCost: 0,
+      requiredLevel: 0,
       abilities: [
         {
           id: 'portal',
@@ -535,6 +654,9 @@ const initialState: GameState = {
       experience: 0,
       isPaid: true,
       isUnlocked: false,
+      cost: 2500,
+      unlockCost: 0,
+      requiredLevel: 0,
       abilities: [
         {
           id: 'reflect',
@@ -561,6 +683,9 @@ const initialState: GameState = {
       experience: 0,
       isPaid: true,
       isUnlocked: false,
+      cost: 3000,
+      unlockCost: 0,
+      requiredLevel: 0,
       abilities: [
         {
           id: 'steal',
@@ -578,7 +703,13 @@ const initialState: GameState = {
       currentSkin: 'default'
     }
   ],
-  battleState: null
+  battle: {
+    isActive: false,
+    currentCharacterIndex: 0,
+    playerCharacters: [],
+    aiCharacters: [],
+    winner: null
+  }
 };
 
 const gameSlice = createSlice({
@@ -602,11 +733,36 @@ const gameSlice = createSlice({
       if (character) {
         Object.assign(character, action.payload.updates);
       }
+    },
+    switchCharacter: (state, action: PayloadAction<number>) => {
+      if (state.battle) {
+        state.battle.currentCharacterIndex = action.payload;
+      }
+    },
+    endBattle: (state) => {
+      if (state.battle) {
+        const playerCharacters = state.battle.playerCharacters;
+        state.battle = {
+          isActive: false,
+          currentCharacterIndex: 0,
+          playerCharacters: [],
+          aiCharacters: [],
+          winner: null
+        };
+      }
+    },
+    damageCharacter: (state, action: PayloadAction<{index: number, damage: number}>) => {
+      if (state.battle) {
+        const character = state.battle.playerCharacters[action.payload.index];
+        if (character) {
+          character.health = Math.max(0, character.health - action.payload.damage);
+        }
+      }
     }
   }
 });
 
-export const { updatePlayer, unlockCharacter, updateCharacter } = gameSlice.actions;
+export const { updatePlayer, unlockCharacter, updateCharacter, switchCharacter, endBattle, damageCharacter } = gameSlice.actions;
 
 export const store = configureStore({
   reducer: {

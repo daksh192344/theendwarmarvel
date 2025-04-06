@@ -8,75 +8,75 @@ const Lobby: React.FC = () => {
   const { player } = useSelector((state: RootState) => state.game);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
+    <div className="relative w-full h-full bg-gray-900 text-white">
       {/* Left Sidebar */}
-      <div className="w-24 bg-gray-800 flex flex-col items-center py-4 space-y-6">
+      <div className="fixed left-0 top-0 h-full w-64 bg-gray-800 flex flex-col items-center py-8 space-y-12">
         <div className="flex flex-col items-center">
           <img 
             src="/profile-placeholder.png" 
             alt="Profile" 
-            className="w-16 h-16 rounded-full bg-gray-700"
+            className="w-48 h-48 rounded-full bg-gray-700"
           />
-          <span className="text-xs mt-2">Lv.{player.level}</span>
+          <span className="text-2xl mt-4">Lv.{player.level}</span>
         </div>
 
-        <button 
+        <button
           onClick={() => navigate('/store')}
-          className="w-20 h-20 bg-gray-700 rounded-lg flex flex-col items-center justify-center hover:bg-gray-600"
+          className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600 transition-all duration-200"
         >
-          <span className="material-icons text-2xl">store</span>
-          <span className="text-xs mt-1">Store</span>
+          <span className="material-icons text-7xl">store</span>
+          <span className="text-2xl mt-4">Store</span>
         </button>
 
-        <button 
+        <button
           onClick={() => navigate('/characters')}
-          className="w-20 h-20 bg-gray-700 rounded-lg flex flex-col items-center justify-center hover:bg-gray-600"
+          className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600 transition-all duration-200"
         >
-          <span className="material-icons text-2xl">groups</span>
-          <span className="text-xs mt-1">Characters</span>
+          <span className="material-icons text-7xl">groups</span>
+          <span className="text-2xl mt-4">Characters</span>
         </button>
 
-        <button 
+        <button
           onClick={() => navigate('/guide')}
-          className="w-20 h-20 bg-gray-700 rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-gray-600"
+          className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600 transition-all duration-200"
         >
-          <span className="material-icons text-2xl">help</span>
-          <span className="text-xs">Guide</span>
+          <span className="material-icons text-7xl">help</span>
+          <span className="text-2xl mt-4">Guide</span>
         </button>
 
         <button 
           onClick={() => navigate('/story')}
-          className="w-20 h-20 bg-gray-700 rounded-lg flex flex-col items-center justify-center hover:bg-gray-600"
+          className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600"
         >
-          <span className="material-icons text-2xl">auto_stories</span>
-          <span className="text-xs mt-1">Story</span>
+          <span className="material-icons text-7xl">auto_stories</span>
+          <span className="text-2xl mt-4">Story</span>
         </button>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-4">
+      <div className="ml-64 p-12">
         {/* Top Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gray-800 px-4 py-2 rounded-lg flex items-center">
-              <span className="material-icons text-yellow-500 mr-2">monetization_on</span>
-              <span>{player.coins}</span>
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex items-center space-x-8">
+            <div className="bg-gray-800 px-12 py-6 rounded-xl flex items-center">
+              <span className="material-icons text-yellow-500 text-5xl mr-4">monetization_on</span>
+              <span className="text-3xl">{player.coins}</span>
             </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-lg flex items-center">
-              <span className="material-icons text-blue-500 mr-2">diamond</span>
-              <span>{player.diamonds}</span>
+            <div className="bg-gray-800 px-12 py-6 rounded-xl flex items-center">
+              <span className="material-icons text-blue-500 text-5xl mr-4">diamond</span>
+              <span className="text-3xl">{player.diamonds}</span>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <button 
+          <div className="flex items-center space-x-8">
+            <button
               onClick={() => navigate('/redeem')}
-              className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700"
+              className="bg-purple-600 px-12 py-6 rounded-xl hover:bg-purple-700 transition-colors duration-200 text-2xl"
             >
               Redeem Code
             </button>
-            <button 
+            <button
               onClick={() => navigate('/profile')}
-              className="bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-700"
+              className="bg-gray-700 px-12 py-6 rounded-xl hover:bg-gray-600 transition-colors duration-200 text-2xl"
             >
               Profile
             </button>
@@ -84,24 +84,26 @@ const Lobby: React.FC = () => {
         </div>
 
         {/* Character Display */}
-        <div className="relative h-[500px] bg-gray-800 rounded-xl overflow-hidden">
+        <div className="relative h-[900px] bg-gray-800 rounded-xl overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             {/* Character model would go here */}
-            <div className="text-6xl text-gray-600">Character Model</div>
+            <div className="text-8xl text-gray-600">Character Model</div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-900">
+          <div className="absolute bottom-0 left-0 right-0 p-12 bg-gradient-to-t from-gray-900">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Battle Royale</h2>
-                <p className="text-gray-400">Choose your character and join the fight!</p>
+                <h2 className="text-6xl font-bold mb-4">Battle Royale</h2>
+                <p className="text-gray-400 text-3xl">Choose your character and join the fight!</p>
               </div>
-              <button 
+              {/* Start Button - Right side */}
+              <button
                 onClick={() => navigate('/battle')}
-                className="bg-yellow-500 text-black px-8 py-3 rounded-lg text-xl font-bold hover:bg-yellow-400"
+                className="w-64 h-64 bg-yellow-500 text-black rounded-2xl flex flex-col items-center justify-center hover:bg-yellow-400 transition-all duration-200 transform hover:scale-105 font-bold shadow-xl"
               >
-                START
+                <span className="material-icons text-8xl">play_arrow</span>
+                <span className="text-3xl mt-4">Start</span>
               </button>
             </div>
           </div>

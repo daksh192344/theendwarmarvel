@@ -78,6 +78,10 @@ const Battle: React.FC = () => {
   }, [battleStarted, currentFighterIndex, currentAiFighterIndex, selectedCharacters, aiCharacters, characters]);
 
   const handleCharacterSelect = (characterId: string) => {
+    // Check if character is unlocked
+    const character = characters.find(c => c.id === characterId);
+    if (!character?.isUnlocked) return;
+
     if (selectedCharacters.includes(characterId)) {
       setSelectedCharacters(prev => prev.filter(id => id !== characterId));
     } else if (selectedCharacters.length < 3) {
@@ -177,85 +181,103 @@ const Battle: React.FC = () => {
 
   if (!battleStarted) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-4 md:p-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center">Select Your Team (3 Characters)</h1>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
-          {availableCharacters.map((character) => (
-            <div
-              key={character.id}
-              onClick={() => handleCharacterSelect(character.id)}
-              className={`
-                relative cursor-pointer rounded-lg overflow-hidden
-                ${selectedCharacters.includes(character.id) ? 'ring-2 ring-yellow-500' : ''}
-                transition-all duration-200 transform hover:scale-105
-              `}
-            >
-              <div className="bg-gray-800 aspect-square flex items-center justify-center">
-                <span className="material-icons text-4xl md:text-6xl">person</span>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black p-2">
-                <p className="text-xs md:text-sm font-bold truncate">{character.name}</p>
-                <p className="text-xs text-gray-300">Lv.{character.level}</p>
-              </div>
-            </div>
-          ))}
+      <div className="relative w-full h-full bg-gray-900 text-white">
+        {/* Left Sidebar */}
+        <div className="fixed left-0 top-0 h-full w-64 bg-gray-800 flex flex-col items-center py-8 space-y-12">
+          <button
+            onClick={() => navigate('/')}
+            className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600 transition-all duration-200"
+          >
+            <span className="material-icons text-7xl">arrow_back</span>
+            <span className="text-2xl mt-4">Back</span>
+          </button>
         </div>
 
-        {/* Selected Team Preview */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 bg-opacity-95 p-4 md:p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col items-center space-y-4">
-              {/* Team Status */}
-              <div className="text-center mb-2">
-                <p className="text-sm font-bold">
-                  {selectedCharacters.length === 3 
-                    ? "Team Complete! Click start to begin!" 
-                    : `Select ${3 - selectedCharacters.length} more character${3 - selectedCharacters.length === 1 ? '' : 's'}`
-                  }
-                </p>
-              </div>
-              {/* Selected Characters */}
-              <div className="flex flex-wrap justify-center gap-3">
-                {selectedCharacters.map((id) => {
-                  const char = characters.find(c => c.id === id);
-                  return (
-                    <div 
-                      key={id} 
-                      className="bg-gray-700 px-3 py-2 rounded-lg flex items-center space-x-2"
-                      onClick={() => handleCharacterSelect(id)}
-                    >
-                      <span className="material-icons text-xl">person</span>
-                      <span className="font-bold text-sm md:text-base">{char?.name}</span>
+        {/* Main Content Area */}
+        <div className="ml-64 p-12">
+          <div className="mb-12">
+            <h2 className="text-6xl font-bold mb-6">Select Your Team</h2>
+            <p className="text-3xl text-gray-400">Choose 3 characters to battle</p>
+          </div>
+
+          {/* Character Grid */}
+          <div className="grid grid-cols-4 gap-8">
+            {characters.map(character => (
+              <div
+                key={character.id}
+                onClick={() => handleCharacterSelect(character.id)}
+                className={`relative w-96 h-96 bg-gray-800 rounded-2xl p-8 cursor-pointer transition-all duration-200 transform hover:scale-105 ${
+                  selectedCharacters.includes(character.id) ? 'ring-4 ring-yellow-500' : ''
+                } ${character.isUnlocked ? '' : 'opacity-50'}`}
+              >
+                <div className="flex flex-col h-full justify-between">
+                  <div>
+                    <h3 className="text-4xl font-bold mb-4">{character.name}</h3>
+                    <div className="flex items-center mb-4">
+                      <span className="material-icons text-3xl mr-2">favorite</span>
+                      <span className="text-2xl">{character.health}</span>
                     </div>
-                  );
-                })}
-                {Array.from({ length: 3 - selectedCharacters.length }).map((_, i) => (
-                  <div 
-                    key={`empty-${i}`} 
-                    className="bg-gray-700 bg-opacity-50 px-3 py-2 rounded-lg flex items-center space-x-2"
-                  >
-                    <span className="material-icons text-xl text-gray-500">add</span>
-                    <span className="font-bold text-sm md:text-base text-gray-500">Select Hero</span>
                   </div>
-                ))}
+
+                  <div className="space-y-4">
+                    {character.abilities.map(ability => (
+                      <div key={ability.id} className="bg-gray-700 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl font-semibold">{ability.name}</span>
+                          <span className="text-xl text-yellow-500">
+                            {ability.damage ? `${ability.damage} DMG` : 'Special'}
+                          </span>
+                        </div>
+                        <p className="text-xl text-gray-400">{ability.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {!character.isUnlocked && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="material-icons text-6xl text-yellow-500">lock</span>
+                      <p className="text-2xl mt-4">Unlock this character</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Start Button - Fixed position */}
-        {selectedCharacters.length === 3 && (
-          <div className="fixed left-4 bottom-32 z-50">
-            <button
-              onClick={startBattle}
-              className="w-24 h-24 bg-yellow-500 text-black rounded-lg flex flex-col items-center justify-center hover:bg-yellow-400 transition-all duration-200 transform hover:scale-105 font-bold shadow-lg"
-            >
-              <span className="material-icons text-3xl">play_arrow</span>
-              <span className="text-sm mt-1">Start</span>
-            </button>
+        {/* Selected Characters Display */}
+        <div className="fixed bottom-0 left-64 right-0 bg-gray-800 p-8">
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-8">
+              {Array(3).fill(null).map((_, index) => (
+                <div
+                  key={index}
+                  className="w-48 h-48 bg-gray-700 rounded-2xl flex items-center justify-center"
+                >
+                  {selectedCharacters[index] ? (
+                    <span className="text-3xl">
+                      {characters.find(c => c.id === selectedCharacters[index])?.name}
+                    </span>
+                  ) : (
+                    <span className="material-icons text-6xl text-gray-600">person_add</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {selectedCharacters.length === 3 && (
+              <button
+                onClick={startBattle}
+                className="w-64 h-64 bg-yellow-500 text-black rounded-2xl flex flex-col items-center justify-center hover:bg-yellow-400 transition-all duration-200 transform hover:scale-105 font-bold shadow-xl"
+              >
+                <span className="material-icons text-8xl">play_arrow</span>
+                <span className="text-3xl mt-4">Start Battle</span>
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
