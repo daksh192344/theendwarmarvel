@@ -717,7 +717,8 @@ const initialState: GameState = {
     playerCharacters: [],
     aiCharacters: [],
     winner: null
-  }
+  },
+  currentBattle: null
 };
 
 const gameSlice = createSlice({

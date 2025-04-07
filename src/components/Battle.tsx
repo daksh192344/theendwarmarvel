@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { updatePlayer } from '../store';
 import styles from './Battle.module.css';
+import VersusScreen from './VersusScreen';
+import SoundManager from '../utils/sound/SoundManager';
 
 type Fighter = {
   id: string;
@@ -17,7 +19,7 @@ type Fighter = {
 const Battle: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { player, characters } = useSelector((state: RootState) => state.game);
+  const { player, characters, currentBattle } = useSelector((state: RootState) => state.game);
   
   // States for character selection
   const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
@@ -26,6 +28,8 @@ const Battle: React.FC = () => {
   const [currentFighterIndex, setCurrentFighterIndex] = useState(0);
   const [currentAiFighterIndex, setCurrentAiFighterIndex] = useState(0);
   const [isPlayerTurn, setIsPlayerTurn] = useState(true); // Track whose turn it is
+  const [showVersus, setShowVersus] = useState(true);
+  const soundManager = SoundManager.getInstance();
 
   // Get available characters (unlocked for player, non-paid for AI)
   const availableCharacters = characters.filter(c => player.characters.includes(c.id));
@@ -178,6 +182,21 @@ const Battle: React.FC = () => {
       return () => clearTimeout(aiActionTimeout);
     }
   }, [battleStarted, gameOver, opponentFighter, isPlayerTurn]);
+
+  const handleVersusComplete = () => {
+    soundManager.play('battle');
+    setShowVersus(false);
+  };
+
+  if (showVersus) {
+    return (
+      <VersusScreen
+        player1Character={currentBattle?.player1Character || "Captain America"}
+        player2Character={currentBattle?.player2Character || "Iron Man"}
+        onAnimationComplete={handleVersusComplete}
+      />
+    );
+  }
 
   if (!battleStarted) {
     return (

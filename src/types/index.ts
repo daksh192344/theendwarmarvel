@@ -69,9 +69,15 @@ export type BattleState = {
   winner: string | null;
 };
 
-export type GameState = {
+interface CurrentBattle {
+  player1Character: string;
+  player2Character: string;
+}
+
+export interface GameState {
   player: Player;
   players: Player[];
   characters: Character[];
   battle: BattleState;
-}; 
+  currentBattle: CurrentBattle | null;
+} 
