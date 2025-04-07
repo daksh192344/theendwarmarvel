@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import captainAmericaImage from '../assets/images/captain-america.jpg';
+import SoundManager from '../utils/sound/SoundManager';
+import ParticleEffect from './VFX/ParticleEffect';
 
 const Characters: React.FC = () => {
   const { characters, player } = useSelector((state: RootState) => state.game);
+  const [vfxPosition, setVfxPosition] = useState<{ x: number; y: number } | null>(null);
+  const [vfxType, setVfxType] = useState<'unlock' | 'levelUp' | null>(null);
+
+  const handleUnlock = (event: React.MouseEvent<HTMLButtonElement>, character: any) => {
+    const soundManager = SoundManager.getInstance();
+    soundManager.play('unlock');
+    
+    // Get button position for VFX
+    const rect = event.currentTarget.getBoundingClientRect();
+    setVfxPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    });
+    setVfxType('unlock');
+  };
 
   return (
     <div className="relative w-full h-full bg-gray-900 text-white overflow-hidden">
@@ -75,6 +92,7 @@ const Characters: React.FC = () => {
                     <div className="mt-8">
                       <button
                         className="w-full bg-yellow-500 text-black rounded-xl py-6 text-2xl font-bold hover:bg-yellow-400 transition-all duration-200"
+                        onClick={(e) => handleUnlock(e, character)}
                       >
                         Unlock for {character.unlockCost} 💎
                       </button>
@@ -86,6 +104,19 @@ const Characters: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* VFX Layer */}
+      {vfxPosition && vfxType && (
+        <ParticleEffect
+          type={vfxType}
+          x={vfxPosition.x}
+          y={vfxPosition.y}
+          onComplete={() => {
+            setVfxPosition(null);
+            setVfxType(null);
+          }}
+        />
+      )}
     </div>
   );
 };
