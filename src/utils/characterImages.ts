@@ -59,6 +59,61 @@ export const characterImages: CharacterImage[] = [
     name: "Deadpool",
     imageUrl: "https://wallpapers.com/wallpapers/marvel",
     altText: "Deadpool with his katanas"
+  },
+  {
+    name: "Black Widow",
+    imageUrl: "/images/characters/black-widow.jpg",
+    altText: "Black Widow ready for combat"
+  },
+  {
+    name: "Hawkeye",
+    imageUrl: "/images/characters/hawkeye.jpg",
+    altText: "Hawkeye with his bow"
+  },
+  {
+    name: "Winter Soldier",
+    imageUrl: "/images/characters/winter-soldier.jpg",
+    altText: "Winter Soldier with metal arm"
+  },
+  {
+    name: "Star Lord",
+    imageUrl: "/images/characters/star-lord.jpg",
+    altText: "Star Lord with his element guns"
+  },
+  {
+    name: "Captain Marvel",
+    imageUrl: "/images/characters/captain-marvel.jpg",
+    altText: "Captain Marvel in binary form"
+  },
+  {
+    name: "Supreme Strange",
+    imageUrl: "/images/characters/supreme-strange.jpg",
+    altText: "Supreme Strange casting spells"
+  },
+  {
+    name: "Wong",
+    imageUrl: "/images/characters/wong.jpg",
+    altText: "Wong performing mystic arts"
+  },
+  {
+    name: "Makari",
+    imageUrl: "/images/characters/makari.jpg",
+    altText: "Makari using super speed"
+  },
+  {
+    name: "Odin",
+    imageUrl: "/images/characters/odin.jpg",
+    altText: "Odin wielding Gungnir"
+  },
+  {
+    name: "Mysterio",
+    imageUrl: "/images/characters/mysterio.jpg",
+    altText: "Mysterio creating illusions"
+  },
+  {
+    name: "Asimx",
+    imageUrl: "/images/characters/asimx.jpg",
+    altText: "Asimx with power stealing ability"
   }
 ];
 
