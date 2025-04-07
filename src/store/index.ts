@@ -1,10 +1,15 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Player, Character, Ability, GameState } from '../types';
 
+interface InitializeProfilePayload {
+  name: string;
+  is8thStudent: boolean;
+}
+
 const initialState: GameState = {
   player: {
-    id: '1',
-    name: 'Player',
+    id: '',
+    name: '',
     level: 1,
     experience: 0,
     characters: ['thor', 'iron-man', 'captain-america'],
@@ -16,8 +21,11 @@ const initialState: GameState = {
     coins: 0,
     diamonds: 0,
     rank: 'Bronze',
-    selectedCharacters: []
+    selectedCharacters: [],
+    is8thStudent: false,
+    isProfileSet: false
   },
+  players: [],
   characters: [
     {
       id: 'thor',
@@ -716,6 +724,28 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
+    initializeProfile: (state, action: PayloadAction<InitializeProfilePayload>) => {
+      const { name, is8thStudent } = action.payload;
+      const newPlayer = {
+        ...state.player,
+        id: Math.random().toString(36).substr(2, 9),
+        name,
+        is8thStudent,
+        isProfileSet: true
+      };
+      
+      // Update current player
+      state.player = newPlayer;
+      
+      // Add to players list
+      state.players.push(newPlayer);
+      
+      // Give bonus resources to 8th students
+      if (is8thStudent) {
+        state.player.gems += 500;
+        state.player.gold += 1000;
+      }
+    },
     updatePlayer: (state, action: PayloadAction<Partial<Player>>) => {
       state.player = { ...state.player, ...action.payload };
     },
@@ -762,7 +792,7 @@ const gameSlice = createSlice({
   }
 });
 
-export const { updatePlayer, unlockCharacter, updateCharacter, switchCharacter, endBattle, damageCharacter } = gameSlice.actions;
+export const { initializeProfile, updatePlayer, unlockCharacter, updateCharacter, switchCharacter, endBattle, damageCharacter } = gameSlice.actions;
 
 export const store = configureStore({
   reducer: {
