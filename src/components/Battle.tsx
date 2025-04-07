@@ -96,7 +96,7 @@ const Battle: React.FC = () => {
   const startBattle = () => {
     if (selectedCharacters.length === 3) {
       setBattleStarted(true);
-      setIsPlayerTurn(true); // Player starts first
+      setIsPlayerTurn(true);
       addToBattleLog("Battle starts! It's your turn!");
     }
   };
@@ -117,6 +117,18 @@ const Battle: React.FC = () => {
         if (currentAiFighterIndex < 2) {
           // Next AI fighter
           setCurrentAiFighterIndex(prev => prev + 1);
+          // Get next AI character with their current health (not max health)
+          const nextAiChar = characters.find(c => c.id === aiCharacters[currentAiFighterIndex + 1]);
+          if (nextAiChar) {
+            setOpponentFighter({
+              id: nextAiChar.id,
+              name: nextAiChar.name,
+              health: nextAiChar.health, // Use current health instead of maxHealth
+              maxHealth: nextAiChar.maxHealth,
+              isBlocking: false,
+              isStunned: false
+            });
+          }
         } else {
           // Player wins
           setGameOver(true);
@@ -124,7 +136,6 @@ const Battle: React.FC = () => {
           dispatch(updatePlayer({ experience: player.experience + 10 }));
         }
       } else {
-        // Switch turns after player's attack
         setIsPlayerTurn(false);
         addToBattleLog("Opponent's turn!");
       }
@@ -137,13 +148,24 @@ const Battle: React.FC = () => {
         if (currentFighterIndex < 2) {
           // Next player fighter
           setCurrentFighterIndex(prev => prev + 1);
+          // Get next player character with their current health (not max health)
+          const nextPlayerChar = characters.find(c => c.id === selectedCharacters[currentFighterIndex + 1]);
+          if (nextPlayerChar) {
+            setPlayerFighter({
+              id: nextPlayerChar.id,
+              name: nextPlayerChar.name,
+              health: nextPlayerChar.health, // Use current health instead of maxHealth
+              maxHealth: nextPlayerChar.maxHealth,
+              isBlocking: false,
+              isStunned: false
+            });
+          }
         } else {
           // AI wins
           setGameOver(true);
           setWinner('opponent');
         }
       } else {
-        // Switch turns after AI's attack
         setIsPlayerTurn(true);
         addToBattleLog("Your turn!");
       }
@@ -200,102 +222,74 @@ const Battle: React.FC = () => {
 
   if (!battleStarted) {
     return (
-      <div className="relative w-full h-full bg-gray-900 text-white">
-        {/* Left Sidebar */}
-        <div className="fixed left-0 top-0 h-full w-64 bg-gray-800 flex flex-col items-center py-8 space-y-12">
-          <button
-            onClick={() => navigate('/')}
-            className="w-56 h-56 bg-gray-700 rounded-2xl flex flex-col items-center justify-center hover:bg-gray-600 transition-all duration-200"
-          >
-            <span className="material-icons text-7xl">arrow_back</span>
-            <span className="text-2xl mt-4">Back</span>
-          </button>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="ml-64 p-12">
-          <div className="mb-12">
-            <h2 className="text-6xl font-bold mb-6">Select Your Team</h2>
-            <p className="text-3xl text-gray-400">Choose 3 characters to battle</p>
+      <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold">Battle</h1>
+            <button
+              onClick={() => navigate('/')}
+              className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg"
+            >
+              Back
+            </button>
           </div>
 
-          {/* Character Grid */}
-          <div className="grid grid-cols-4 gap-8">
-            {characters.map(character => (
-              <div
-                key={character.id}
-                onClick={() => handleCharacterSelect(character.id)}
-                className={`relative w-96 h-96 bg-gray-800 rounded-2xl p-8 cursor-pointer transition-all duration-200 transform hover:scale-105 ${
-                  selectedCharacters.includes(character.id) ? 'ring-4 ring-yellow-500' : ''
-                } ${character.isUnlocked ? '' : 'opacity-50'}`}
-              >
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <h3 className="text-4xl font-bold mb-4">{character.name}</h3>
-                    <div className="flex items-center mb-4">
-                      <span className="material-icons text-3xl mr-2">favorite</span>
-                      <span className="text-2xl">{character.health}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {character.abilities.map(ability => (
-                      <div key={ability.id} className="bg-gray-700 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl font-semibold">{ability.name}</span>
-                          <span className="text-xl text-yellow-500">
-                            {ability.damage ? `${ability.damage} DMG` : 'Special'}
-                          </span>
-                        </div>
-                        <p className="text-xl text-gray-400">{ability.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {!character.isUnlocked && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
-                    <div className="text-center">
-                      <span className="material-icons text-6xl text-yellow-500">lock</span>
-                      <p className="text-2xl mt-4">Unlock this character</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected Characters Display */}
-        <div className="fixed bottom-0 left-64 right-0 bg-gray-800 p-8">
-          <div className="flex justify-between items-center">
-            <div className="flex space-x-8">
-              {Array(3).fill(null).map((_, index) => (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Select Your Team (3 Characters)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {characters.map(character => (
                 <div
-                  key={index}
-                  className="w-48 h-48 bg-gray-700 rounded-2xl flex items-center justify-center"
+                  key={character.id}
+                  onClick={() => handleCharacterSelect(character.id)}
+                  className={`relative w-96 h-96 bg-gray-800 rounded-2xl p-8 cursor-pointer transition-all duration-200 transform hover:scale-105 ${
+                    selectedCharacters.includes(character.id) ? 'ring-4 ring-yellow-500' : ''
+                  } ${character.isUnlocked ? '' : 'opacity-50'}`}
                 >
-                  {selectedCharacters[index] ? (
-                    <span className="text-3xl">
-                      {characters.find(c => c.id === selectedCharacters[index])?.name}
-                    </span>
-                  ) : (
-                    <span className="material-icons text-6xl text-gray-600">person_add</span>
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      <h3 className="text-4xl font-bold mb-4">{character.name}</h3>
+                      <div className="flex items-center mb-4">
+                        <span className="material-icons text-3xl mr-2">favorite</span>
+                        <span className="text-2xl">{character.health}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {character.abilities.map(ability => (
+                        <div key={ability.id} className="bg-gray-700 rounded-xl p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl font-semibold">{ability.name}</span>
+                            <span className="text-xl text-yellow-500">
+                              {ability.damage ? `${ability.damage} DMG` : 'Special'}
+                            </span>
+                          </div>
+                          <p className="text-xl text-gray-400">{ability.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {!character.isUnlocked && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                      <div className="text-center">
+                        <span className="material-icons text-6xl text-yellow-500">lock</span>
+                        <p className="text-2xl mt-4">Unlock this character</p>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
             </div>
-
-            {selectedCharacters.length === 3 && (
-              <button
-                onClick={startBattle}
-                className="w-64 h-64 bg-yellow-500 text-black rounded-2xl flex flex-col items-center justify-center hover:bg-yellow-400 transition-all duration-200 transform hover:scale-105 font-bold shadow-xl"
-              >
-                <span className="material-icons text-8xl">play_arrow</span>
-                <span className="text-3xl mt-4">Start Battle</span>
-              </button>
-            )}
           </div>
+
+          {selectedCharacters.length === 3 && (
+            <button
+              onClick={startBattle}
+              className="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-8 rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg"
+            >
+              BATTLE!
+            </button>
+          )}
         </div>
       </div>
     );

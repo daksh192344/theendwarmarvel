@@ -42,14 +42,16 @@ export type Achievement = {
   };
 };
 
-export type Player = {
+export interface Player {
   id: string;
   name: string;
   level: number;
   experience: number;
   characters: string[];
-  gems: number;
-  gold: number;
+  resources: {
+    gold: number;
+    gems: number;
+  };
   wins: number;
   losses: number;
   achievements: Achievement[];
@@ -59,17 +61,15 @@ export type Player = {
   selectedCharacters: string[];
   is8thStudent: boolean;
   isProfileSet: boolean;
-};
+}
 
-export type BattleState = {
-  isActive: boolean;
-  currentCharacterIndex: number;
-  playerCharacters: Character[];
-  aiCharacters: Character[];
+export interface BattleState {
+  selectedCharacters: string[];
+  aiCharacters: string[];
   winner: string | null;
-};
+}
 
-interface CurrentBattle {
+export interface CurrentBattle {
   player1Character: string;
   player2Character: string;
 }
@@ -80,4 +80,5 @@ export interface GameState {
   characters: Character[];
   battle: BattleState;
   currentBattle: CurrentBattle | null;
+  characterHealth: { [characterId: string]: number };
 } 
