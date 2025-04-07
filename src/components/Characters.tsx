@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import captainAmericaImage from '../assets/images/captain-america.jpg';
 
 const Characters: React.FC = () => {
   const { characters, player } = useSelector((state: RootState) => state.game);
@@ -35,6 +36,17 @@ const Characters: React.FC = () => {
                 className={`bg-gray-800 rounded-2xl p-8 ${!character.isUnlocked ? 'opacity-50' : ''}`}
               >
                 <div className="flex flex-col h-full">
+                  {/* Character Image */}
+                  {character.name === "Captain America" && (
+                    <div className="mb-6 overflow-hidden rounded-xl">
+                      <img
+                        src={captainAmericaImage}
+                        alt="Captain America"
+                        className="w-full h-64 object-cover transform hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  
                   <div className="mb-8">
                     <h3 className="text-4xl font-bold mb-4">{character.name}</h3>
                     <div className="flex items-center mb-4">
