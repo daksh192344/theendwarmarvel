@@ -57,6 +57,8 @@ export type Player = {
   diamonds: number;
   rank: string;
   selectedCharacters: string[];
+  is8thStudent: boolean;
+  isProfileSet: boolean;
 };
 
 export type BattleState = {
@@ -69,6 +71,7 @@ export type BattleState = {
 
 export type GameState = {
   player: Player;
+  players: Player[];
   characters: Character[];
   battle: BattleState;
 }; 
